@@ -3,6 +3,169 @@ Hibernate 5 Changelog
 
 Note: Please refer to JIRA to learn more about each issue.
 
+Changes in 5.4.6.Final (September 30, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31794/tab/release-report-done
+
+** Bug
+    * [HHH-11797] - Envers Map<Enum, Entity> not auditing correctly
+    * [HHH-13493] - For a native query, the SessionImpl class does not call applyQuerySettingsAndHints
+    * [HHH-13597] - Building DatabaseInformation fails on H2 without DATABASE_TO_UPPER
+    * [HHH-13625] - After upgrading to 5.4.5, it's no longer possible to bootstrap Hibernate if the org.hibernate.cfg LOG is set to DEBUG
+    * [HHH-13645] - StatsNamedContainer#getOrCompute throws NullPointerException when computed value is null
+
+** Improvement
+    * [HHH-13130] - Provide Gradle-based bytecode enhancement as a task separate from the compileJava task
+
+
+Changes in 5.4.5.Final (September 17, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31779/tab/release-report-done
+
+** Bug
+    * [HHH-13259] - StackOverflowError from StringHelper
+    * [HHH-13466] - ClassCastException when changing a Collection association to a Set if @PreUpdate listener exists
+    * [HHH-13544] - Restore logged warning on jdbc code mapping issue in NationalizedTypeMappings
+    * [HHH-13550] - Fix Oracle failure for test added by HHH-13424
+    * [HHH-13551] - StrategyRegistrationProvider does not properly handle implementations from different classloader
+    * [HHH-13554] - QueryAndSQLTest.testNativeQueryWithFormulaAttributeWithoutAlias() fails on Oracle, MSSQL, Sybase, DB2, MariaDB
+    * [HHH-13555] - FetchGraphTest, MergeProxyTest and ProxyDeletionTest fail due to ConstraintViolationException
+    * [HHH-13556] - Tests doing dynamic fetch scrolling a collection fail on DB2
+    * [HHH-13557] - LocalTimeTest#writeThenNativeRead and OffsetTimeTest#writeThenNativeRead tests are failing on SQL Server
+    * [HHH-13558] - InstantTest, LocalDateTimeTest, OffsetDateTimeTest, ZonedDateTimeTest failing on Sybase for year 1600
+    * [HHH-13564] - Envers - Getting NPE while reading revisions of entity with @EmbeddedId composite key located in parent @MappedSuperclass
+    * [HHH-13569] - org.hibernate.test.annotations.embedded.EmbeddedTest failures on Sybase
+    * [HHH-13570] - Test failures due to Sybase not supporting UPDATE statement with WITH(NOWAIT)
+    * [HHH-13571] - Test failures due to cross joined table out of scope of a subsequent JOIN on Sybase
+    * [HHH-13573] - Test failure due to Sybase not supporting cascade delete on foreign key definitions
+    * [HHH-13574] - SybaseASE does not support PARTITION BY
+    * [HHH-13577] - LockTest.testContendedPessimisticLock and StatementIsClosedAfterALockExceptionTest.testStatementIsClosed  tests fail on Sybase
+    * [HHH-13580] - LocalTimeTest#writeThenNativeRead* and OffsetTimeTest#writeThenNativeRead* failing on MySQL
+    * [HHH-13581] - LocalTimeTest#writeThenRead* and OffsetTimeTest#writeThenRead* failing on MariaDB
+    * [HHH-13582] - LocalDateTest failures on MySQL
+    * [HHH-13586] - ClassCastException when using a single region name for both entity and query results
+    * [HHH-13590] - TransientObjectException merging a non-proxy association to a HibernateProxy
+    * [HHH-13592] - AutoFlushEvent#isFlushRequired is always false
+    * [HHH-13607] - Exception thrown while flushing uninitialized enhanced proxy with immutable natural ID
+    * [HHH-13611] - Restore EntityMetamodel constructor to take SessionFactoryImplementor argument instead of PersisterCreationContext.
+    * [HHH-13616] - Enable the hibernate-orm-modules test for JDK 11
+    * [HHH-13621] - Exception if spaces after value of  javax.persistence.schema-generation.scripts.action in hibernate.properties
+
+** New Feature
+    * [HHH-13249] - Introduce an option to Log slow queries instead of all queries
+
+** Task
+    * [HHH-13525] - Make test SessionDelegatorBaseImplTest more resilient to previously existing alias definition
+    * [HHH-13526] - Optimise ResourceRegistryStandardImpl#release
+    * [HHH-13527] - Performance regression in org.hibernate.stat.internal.StatisticsImpl
+    * [HHH-13528] - Invoke afterStatements only at the end of releasing all statements for a batch
+    * [HHH-13529] - Performance regression in org.hibernate.engine.spi.SessionFactoryImplementor#getDialect
+    * [HHH-13531] - Some more opportunities to reuse the constants pool in AliasConstantsHelper
+    * [HHH-13534] - AbstractLoadPlanBasedLoader never needs a List of AfterLoadAction
+    * [HHH-13546] - Make the sessionFactory field in StatisticsImpl required
+    * [HHH-13549] - Cleanup dead code in StringHelper
+    * [HHH-13552] - CollectionType needs a direct reference to its Persister
+    * [HHH-13553] - Fix test failures on SAP HANA
+    * [HHH-13561] - Do not retrieve the same ActionQueue multiple times
+    * [HHH-13562] - List of TransactionObserver for  JdbcResourceLocalTransactionCoordinatorImpl should be lazily initialized
+    * [HHH-13563] - ResultSetReturnImpl is looking up JdbcServices on each construction
+    * [HHH-13565] - Improve Session opening efficiency
+    * [HHH-13568] - Instances of NaturalIdXrefDelegate should be lazily initialized if possible
+    * [HHH-13605] - InstantTest, OffsetDateTimeTest, ZonedDateTimeTest fail for MariaDB on CI
+    * [HHH-13606] - LocalDateTimeTest fails for HANA on CI
+    * [HHH-13622] - Upgrade the WildFly Transaction Client to 1.1.7.Final
+
+** Improvement
+    * [HHH-13133] - Print message about 'successfully enhanced class' as debug in Maven enhancement plugin
+    * [HHH-13412] - Move hibernate.connection description out of c3p0 section
+    * [HHH-13512] - Avoid allocating an array in org.hibernate.internal.util.StringHelper#unquote(String[], Dialect) if there are no changes to be applied
+    * [HHH-13521] - Avoid excessive validation of enabled filters
+    * [HHH-13522] - Optimise LoadQueryInfluencers by making maps lazily initialized
+    * [HHH-13523] - StatementPreparerImpl should not need to retrieve the JDBCService as often
+    * [HHH-13524] - Remove unused fields xref,unassociatedResultSets from JdbcCoordinatorImpl
+    * [HHH-13541] - ExceptionConverter instance in AbstractSharedSessionContract should be lazily initialized
+    * [HHH-13548] - Since SessionOwner is deprecated several fields in SessionImpl can be removed
+    * [HHH-13576] - Invoking tracef() or debugf() w/o an array of parameters actually allocates an empty Object[]
+    * [HHH-13579] - Cleanup of resources in ResourceRegistryStandardImpl allocates many Iterators
+    * [HHH-13584] - Reduce ServiceRegistry lookups in LocalConnectionAccess in SessionFactory
+    * [HHH-13585] - Duplicate resource release in PessimisticReadSelectLockingStrategy
+    * [HHH-13587] - Initialize selected collections of StatefulPersistenceContext lazily
+    * [HHH-13588] - MySQL Dialect: missed functions: weight_string, to_base64, from_base64, regexp_replace, regexp_instr, regexp_substr
+    * [HHH-13589] - Minor memory allocation improvements in ActionQueue
+    * [HHH-13591] - Replaces simple uses of array iteration with a corresponding for-each loop
+    * [HHH-13594] - ResourceRegistryStandardImpl#release could avoid allocating a capturing lambda
+    * [HHH-13599] - Avoid ArrayList allocation in JtaTransactionCoordinatorImp in common scenario
+    * [HHH-13600] - Avoid allocation of capturing lambdas in ParameterTranslationsImpl and AbstractDomainDataRegion
+
+** Deprecation
+    * [HHH-13595] - Deprecate ConnectionObserver
+
+
+Changes in 5.4.4.Final (July 29, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31774/tab/release-report-done
+
+** Bug
+    * [HHH-12642] - Lazy enhanced entity as relationship is always loaded in a criteria query
+    * [HHH-13357] - OffsetTimeTest fails using TimeAsTimestampRemappingH2Dialect in non-GMT European time zones
+    * [HHH-13379] - Regression of Instant serialization
+    * [HHH-13409] - Hibernate ORM does not detect services provided by libraries in the module path
+    * [HHH-13424] - Table nullability should not depend on JpaCompliance.isJpaCacheComplianceEnabled()
+    * [HHH-13443] - Build failing to parse *.properties file attributes containing trailing space
+    * [HHH-13454] - org.hibernate.orm.test.query.criteria.BasicCriteriaExecutionTests fails on Oracle
+    * [HHH-13455] - Enabling Enhancement as a Proxy causes IllegalStateException when using Javassist
+    * [HHH-13459] - Unit test lock up when they run on PostgreSQL
+    * [HHH-13460] - FetchGraphTest is failing on MariaDB
+    * [HHH-13463] - Hibernate has a dependency on plexus-utils:3.0.1 that is vulnerable to CVE-2017-1000487 with a CVSS of 7.5
+    * [HHH-13492] - OptimisticLockException after locking, refreshing, and updating an entity
+    * [HHH-13500] - Subquery of DefaultAuditStrategy results in a wrong revision
+    * [HHH-13505] - NullPointerException thrown by StatisticsImpl#getCacheRegionStatistics
+    * [HHH-13514] - Calling the wrong method inside SessionDelegatorBaseImpl#createStoredProcedureQuery
+
+** New Feature
+    * [HHH-11147] - Allow enhanced entities to be returned in a completely uninitialized state
+    * [HHH-13154] - Add support for JPA criteria on stateless sessions
+
+** Task
+    * [HHH-13415] - Improve build compatibility with JDK11.0.3
+    * [HHH-13461] - Style and formatting fixes: CollectionEntry
+    * [HHH-13504] - Upgrade ByteBuddy to 1.9.11
+    * [HHH-13513] - Partial revert of string interning introduced by HHH-3924
+    * [HHH-13520] - Deprecate mutators on SqlStatementLogger
+
+** Improvement
+    * [HHH-11032] - Improve performance of PersistentBag.equalsSnapshot
+    * [HHH-13226] - Typo in some configuration properties (HBM2DDL vs HBM2DLL)
+    * [HHH-13303] - Fix some alerts from LGTM
+    * [HHH-13428] - Minor cleanup of build scripts
+    * [HHH-13429] - Upgrade WildFly provisioning plugin to version 0.0.11
+    * [HHH-13442] - CollectionType#getCollection() method improvements
+    * [HHH-13444] - Remove ignored EntityMode field from CollectionKey
+    * [HHH-13447] - Minimize number of EventListenerRegistry lookups within a Session use
+    * [HHH-13448] - Avoid retrieving PRE_LOAD and POST_LOAD Event listeners within the inner loops of TwoPhaseLoad
+    * [HHH-13450] - Do not compute the full role name of a collection unless necessary
+    * [HHH-13451] - Logging typo in CascadingActions causing significant allocations
+    * [HHH-13452] - Missing log level guard on formatting in DefaultPersistEventListener#entityIsDeleted
+    * [HHH-13453] - Optimise CascadingActions for the most likely case
+    * [HHH-13458] - Update Hibernate's custom IdentityMap to better match its use
+    * [HHH-13462] - Introduce a fastpath for SessionImpl#fireLoad to be used by internal loops
+    * [HHH-13465] - Allow inlined access to the PersistenceContext for internal methods
+    * [HHH-13467] - Make average BatchFetchQueue consume less memory
+    * [HHH-13471] - Avoid invoking delayedAfterCompletion() multiple times from the same SessionImpl method
+    * [HHH-13475] - SessionImpl#applyQuerySettingsAndHints should not rely on defensive copies to just read properties
+    * [HHH-13476] - Micro-optimisations of TwoPhaseLoad#getOverridingEager
+    * [HHH-13477] - Make heavily invoked method final: EventListenerGroupImpl#listeners()
+    * [HHH-13478] - Various low hanging fruits identified by CPU flame graphs
+    * [HHH-13494] - LobTypeMappings should not use a Bounded ConcurrentHashmap
+    * [HHH-13495] - NationalizedTypeMappings should not use a Bounded ConcurrentHashmap
+    * [HHH-13496] - Apply some minor yet improvements identified via static code analysis tools
+    * [HHH-13508] - Reuse alias names generated by BasicLoader#generateSuffixes
+    * [HHH-13511] - Remove old org.hibernate.loader.DefaultEntityAliases#intern
+
+
 Changes in 5.4.3.Final (May 30, 2019)
 ------------------------------------------------------------------------------------------------------------------------
 

@@ -11,11 +11,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -35,6 +36,9 @@ import org.hibernate.type.Type;
 public class PersistentBag extends AbstractPersistentCollection implements List {
 
 	protected List bag;
+
+	// The Collection provided to a PersistentBag constructor,
+	private Collection providedCollection;
 
 	/**
 	 * Constructs a PersistentBag.  Needed for SOAP libraries, etc
@@ -72,6 +76,7 @@ public class PersistentBag extends AbstractPersistentCollection implements List 
 	@SuppressWarnings("unchecked")
 	public PersistentBag(SharedSessionContractImplementor session, Collection coll) {
 		super( session );
+		providedCollection = coll;
 		if ( coll instanceof List ) {
 			bag = (List) coll;
 		}
@@ -98,7 +103,12 @@ public class PersistentBag extends AbstractPersistentCollection implements List 
 
 	@Override
 	public boolean isWrapper(Object collection) {
-		return bag==collection;
+		return bag == collection;
+	}
+
+	@Override
+	public boolean isDirectlyProvidedCollection(Object collection) {
+		return isDirectlyAccessible() && providedCollection == collection;
 	}
 
 	@Override
@@ -184,7 +194,14 @@ public class PersistentBag extends AbstractPersistentCollection implements List 
 	 * @return Map of "equality" hashCode to List of objects
 	 */
 	private Map<Integer, List<Object>> groupByEqualityHash(List<Object> searchedBag, Type elementType) {
-		return searchedBag.stream().collect( Collectors.groupingBy( elementType::getHashCode ) );
+		if ( searchedBag.isEmpty() ) {
+			return Collections.emptyMap();
+		}
+		Map<Integer, List<Object>> map = new HashMap<>();
+		for (Object o : searchedBag) {
+			map.computeIfAbsent( elementType.getHashCode( o ), k -> new ArrayList<>() ).add( o );
+		}
+		return map;
 	}
 
 	@Override

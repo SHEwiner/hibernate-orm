@@ -255,15 +255,6 @@ public interface SharedSessionContractImplementor
 	Object internalLoad(String entityName, Serializable id, boolean eager, boolean nullable)
 			throws HibernateException;
 
-	default Object internalLoad(
-			String entityName,
-			Serializable id,
-			boolean eager,
-			boolean nullable,
-			Boolean unwrapProxy) throws HibernateException {
-		return internalLoad( entityName, id, eager, nullable );
-	}
-
 	/**
 	 * Load an instance immediately. This method is only called when lazily initializing a proxy.
 	 * Do not return the proxy.
@@ -473,6 +464,12 @@ public interface SharedSessionContractImplementor
 	 */
 	LoadQueryInfluencers getLoadQueryInfluencers();
 
+	/**
+	 * The converter associated to a Session might be lazily initialized: only invoke
+	 * this getter when there is actual need to use it.
+	 *
+	 * @return the ExceptionConverter for this Session.
+	 */
 	ExceptionConverter getExceptionConverter();
 
 	/**

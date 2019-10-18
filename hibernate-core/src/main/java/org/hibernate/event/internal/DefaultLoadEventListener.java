@@ -241,8 +241,9 @@ public class DefaultLoadEventListener implements LoadEventListener {
 
 		final EventSource session = event.getSession();
 		final SessionFactoryImplementor factory = session.getFactory();
+		final boolean traceEnabled = LOG.isTraceEnabled();
 
-		if ( LOG.isTraceEnabled() ) {
+		if ( traceEnabled ) {
 			LOG.tracev(
 					"Loading entity: {0}",
 					MessageHelper.infoString( persister, event.getEntityId(), factory )
@@ -283,37 +284,35 @@ public class DefaultLoadEventListener implements LoadEventListener {
 				final Object proxy = persistenceContext.getProxy( keyToLoad );
 
 				if ( proxy != null ) {
-					LOG.trace( "Entity proxy found in session cache" );
-
-					LazyInitializer li = ( (HibernateProxy) proxy ).getHibernateLazyInitializer();
-
-					if ( li.isUnwrap() || event.getShouldUnwrapProxy() ) {
-						return li.getImplementation();
+					if( traceEnabled ) {
+						LOG.trace( "Entity proxy found in session cache" );
 					}
 
+					if ( LOG.isDebugEnabled() && ( (HibernateProxy) proxy ).getHibernateLazyInitializer().isUnwrap() ) {
+						LOG.debug( "Ignoring NO_PROXY to honor laziness" );
+					}
 
 					return persistenceContext.narrowProxy( proxy, persister, keyToLoad, null );
 				}
 
 				// specialized handling for entities with subclasses with a HibernateProxy factory
 				if ( entityMetamodel.hasSubclasses() ) {
-					// entities with subclasses that define a ProxyFactory can create
-					// a HibernateProxy so long as NO_PROXY was not specified.
-					if ( event.getShouldUnwrapProxy() != null && event.getShouldUnwrapProxy() ) {
-						LOG.debugf( "Ignoring NO_PROXY for to-one association with subclasses to honor laziness" );
-					}
+					// entities with subclasses that define a ProxyFactory can create a HibernateProxy
 					return createProxy( event, persister, keyToLoad, persistenceContext );
 				}
 			}
+			if ( !entityMetamodel.hasSubclasses() ) {
+				if ( keyToLoad.isBatchLoadable() ) {
+					// Add a batch-fetch entry into the queue for this entity
+					persistenceContext.getBatchFetchQueue().addBatchLoadableEntityKey( keyToLoad );
+				}
 
-			if ( keyToLoad.isBatchLoadable() ) {
-				// Add a batch-fetch entry into the queue for this entity
-				persistenceContext.getBatchFetchQueue().addBatchLoadableEntityKey( keyToLoad );
+				// This is the crux of HHH-11147
+				// create the (uninitialized) entity instance - has only id set
+				return persister.getBytecodeEnhancementMetadata().createEnhancedProxy( keyToLoad, true, session );
 			}
-
-			// This is the crux of HHH-11147
-			// create the (uninitialized) entity instance - has only id set
-			return persister.getBytecodeEnhancementMetadata().createEnhancedProxy( keyToLoad, true, session );
+			// If we get here, then the entity class has subclasses and there is no HibernateProxy factory.
+			// The entity will get loaded below.
 		}
 		else {
 			if ( persister.hasProxy() ) {
