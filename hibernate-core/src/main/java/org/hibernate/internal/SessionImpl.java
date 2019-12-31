@@ -3347,8 +3347,14 @@ public final class SessionImpl
 			throw getExceptionConverter().convert( new IllegalArgumentException( e.getMessage(), e ) );
 		}
 		catch ( JDBCException e ) {
-			if ( accessTransaction().getRollbackOnly() ) {
-				// assume this is the similar to the WildFly / IronJacamar "feature" described under HHH-12472
+			if ( accessTransaction().isActive() && accessTransaction().getRollbackOnly() ) {
+				// Assume this is the similar to the WildFly / IronJacamar "feature" described under HHH-12472.
+				// Just log the exception and return null.
+				if ( log.isDebugEnabled() ) {
+					log.debug( "JDBCException was thrown for a transaction marked for rollback; " +
+									"this is probably due to an operation failing fast due to the " +
+									"transaction marked for rollback.", e );
+				}
 				return null;
 			}
 			else {

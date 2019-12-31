@@ -637,11 +637,18 @@ public class QueryParameterBindingsImpl implements QueryParameterBindings {
 				parameterBindingMap.put( syntheticParam, syntheticBinding );
 			}
 
+			String expansionListAsString = expansionList.toString();
+
+			// HHH-8901
+			if ( ! dialect.supportsEmptyInList() && expansionListAsString.isEmpty() ) {
+				expansionListAsString = "null";
+			}
+
 			queryString = StringHelper.replace(
 					beforePlaceholder,
 					afterPlaceholder,
 					sourceToken,
-					expansionList.toString(),
+					expansionListAsString,
 					true,
 					true
 			);

@@ -318,6 +318,24 @@ public abstract class AbstractEntityPersister
 
 	protected abstract boolean isClassOrSuperclassTable(int j);
 
+	protected boolean isClassOrSuperclassJoin(int j) {
+		/*
+		 * TODO:
+		 *  SingleTableEntityPersister incorrectly used isClassOrSuperclassJoin == isClassOrSuperclassTable,
+		 *  this caused HHH-12895, as this resulted in the subclass tables always being joined, even if no
+		 *  property on these tables was accessed.
+		 *
+		 *  JoinedTableEntityPersister does not use isClassOrSuperclassJoin at all, probably incorrectly so.
+		 *  I however haven't been able to reproduce any quirks regarding <join>s, secondary tables or
+		 *  @JoinTable's.
+		 *
+		 *  Probably this method needs to be properly implemented for the various entity persisters,
+		 *  but this at least fixes the SingleTableEntityPersister, while maintaining the the
+		 *  previous behaviour for other persisters.
+		 */
+		return isClassOrSuperclassTable( j );
+	}
+
 	public abstract int getSubclassTableSpan();
 
 	protected abstract int getTableSpan();
@@ -3303,7 +3321,18 @@ public abstract class AbstractEntityPersister
 
 		final Expectation expectation = Expectations.appropriateExpectation( updateResultCheckStyles[j] );
 		final int jdbcBatchSizeToUse = session.getConfiguredJdbcBatchSize();
-		final boolean useBatch = expectation.canBeBatched() && isBatchable() && jdbcBatchSizeToUse > 1;
+		// IMPLEMENTATION NOTE: If Session#saveOrUpdate or #update is used to update an entity, then
+		//                      Hibernate does not have a database snapshot of the existing entity.
+		//                      As a result, oldFields will be null.
+		// Don't use a batch if oldFields == null and the jth table is optional (isNullableTable( j ),
+		// because there is no way to know that there is actually a row to update. If the update
+		// was batched in this case, the batch update would fail and there is no way to fallback to
+		// an insert.
+		final boolean useBatch =
+				expectation.canBeBatched() &&
+						isBatchable() &&
+						jdbcBatchSizeToUse > 1 &&
+						( oldFields != null || !isNullableTable( j ) );
 		if ( useBatch && updateBatchKey == null ) {
 			updateBatchKey = new BasicBatchKey(
 					getEntityName() + "#UPDATE",
@@ -4005,7 +4034,7 @@ public abstract class AbstractEntityPersister
 			Set<String> treatAsDeclarations,
 			Set<String> referencedTables) {
 
-		if ( isClassOrSuperclassTable( subclassTableNumber ) ) {
+		if ( isClassOrSuperclassJoin( subclassTableNumber ) ) {
 			String superclassTableName = getSubclassTableName( subclassTableNumber );
 			if ( referencedTables != null && canOmitSuperclassTableJoin() && !referencedTables.contains(
 					superclassTableName ) ) {

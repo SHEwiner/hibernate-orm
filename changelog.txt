@@ -3,6 +3,112 @@ Hibernate 5 Changelog
 
 Note: Please refer to JIRA to learn more about each issue.
 
+Changes in 5.4.10.Final (December 05, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31811/tab/release-report-done
+
+** Bug
+    * [HHH-9301] - Group by on alias doesn't replace alias
+    * [HHH-12895] - Extra LEFT JOIN generated with @ManyToOne and @JoinTable when projecting on main entity id
+    * [HHH-13355] - StaleStateException for updates to optional secondary table using saveOrUpdate
+    * [HHH-13365] - Entities in joined subclass table are not inserted with batch size > 0 using sequence-identity ID generator
+    * [HHH-13608] - Oracle8iDialect should use CASE_INSENSITIVE pattern matching when checking the statement type
+    * [HHH-13722] - ArrayStoreException in Constraint.generateName
+    * [HHH-13737] - Add debug logging and a test case for HHH-13433
+    * [HHH-13742] - Missing from clause with joined inheritance property in association subquery
+    * [HHH-13758] - Limit Handler for SQL server doesn't work with CTE queries with strings literals
+    * [HHH-13764] - Annotations are ignored during enhancement if they are on the getter instead of the field
+
+** Task
+    * [HHH-13739] - Upgrade to Agroal 1.7
+    * [HHH-13761] - Debug logging of JPA compliance settings didn't log the value of the settings
+    * [HHH-13762] - Update vibur-dbcp dependency to 25.0
+
+** Improvement
+    * [HHH-8091] - Hibernate produces SQL - "in ()" - which is invalid in at least Oracle, MySQL and Postgres
+    * [HHH-13755] - Update Hibernate Gradle Plugin example in the documentation
+
+
+Changes in 5.4.9.Final (November 14, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31806/tab/release-report-done
+
+** Bug
+    * [HHH-12030] - Symbol$TypeVariableSymbol cannot be cast to TypeElement
+    * [HHH-13307] -  On release of batch it still contained JDBC statements using JTA
+    * [HHH-13433] - EntityManager.find() should only check for roll-back-only condition if there is an active JTA transaction, otherwise ORM should throw convert( e, lockOptions )
+    * [HHH-13614] - Allow the IntegratorProvider to be supplied via its FQN in the JPA persistence.xml
+    * [HHH-13670] - Missing from clause in query with joined inheritance, regression in 5.4.5
+    * [HHH-13687] - TenantSchemaResolver not called in integration test after upgrade from 5.4.4 to >=5.4.5
+    * [HHH-13690] - Multi-tenancy supporting session factories can not be created
+    * [HHH-13698] - Hibernate does not recognize MySQL 8 error code 3572 as PessimisticLockException
+    * [HHH-13700] - Configuration property CONNECTION_PROVIDER_DISABLES_AUTOCOMMIT should not be passed to the JDBC connection properties
+    * [HHH-13705] - Enhancement as Proxy with inline dirty checking - flush of an @ManyToOne with an Embedded value having not null properties causes PropertyValueException
+    * [HHH-13710] - Wrong tenant-identifier in Envers temporary session
+    * [HHH-13712] - inheritance - select count query is not working with inheritance
+    * [HHH-13727] - h2 database with DATABASE_TO_UPPER=false throws org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "sequences" not found
+
+** Task
+    * [HHH-13730] - Upgrade to Classmate 1.4.0
+    * [HHH-13731] - Upgrade to Classmate 1.5.1
+    * [HHH-13733] - Upgrade to Jandex 2.1.1.Final
+
+** Improvement
+    * [HHH-13654] - Avoid clearing of collections when closing StatefulPersistenceContext
+    * [HHH-13723] - Hint sizing of ArrayList in ResultSetProcessingContextImpl
+
+
+Changes in 5.4.8.Final (October 28, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31804/tab/release-report-done
+
+** Bug
+    * [HHH-12965] - Hibernate Envers Audit tables are created with foreign key with the entity. Because of this I am not able to delete any entries from the entity tables.
+    * [HHH-13446] - java.lang.VerifyError from compile-time enhanced @Entity
+    * [HHH-13651] - NPE on flushing when ElementCollection field contains null element
+    * [HHH-13695] - DDL export forgets to close a Statement
+    * [HHH-13696] - Multiple OSGi bundles initializing concurrently would overlap classloaders
+
+** Improvement
+    * [HHH-13686] - Upgrade to Agroal 1.6
+
+
+Changes in 5.4.7.Final (October 21, 2019)
+------------------------------------------------------------------------------------------------------------------------
+
+https://hibernate.atlassian.net/projects/HHH/versions/31799/tab/release-report-done
+
+** Bug
+    * [HHH-4235] - MapBinder.createFormulatedValue() does not honor DB schema name when creating query
+    * [HHH-13633] - Bugs join-fetching a collection when scrolling with a stateless session using enhancement as proxy
+    * [HHH-13634] - PersistenceContext can get cleared before load completes using StatelessSessionImpl
+    * [HHH-13640] - Uninitialized HibernateProxy mapped as NO_PROXY gets initialized when reloaded with enhancement-as-proxy enabled
+    * [HHH-13653] - Uninitialized entity does not get initialized when a setter is called with enhancement-as-proxy enabled
+    * [HHH-13655] - Envers Map<Enum, Integer> causes NullPointerException when mapped with @MapKeyEnumerated since Hibernate 5.4.6
+    * [HHH-13663] - Session#setHibernateFlushMode() method not callable without an active transaction
+    * [HHH-13665] - Selecting an entity annotated with @Immutable but not with @Cachable causes a NPE when use_reference_entries is enabled
+    * [HHH-13672] - The temporary PersistenceContext of a StatelessSession is not cleared after a refresh operation
+    * [HHH-13675] - Optimize PersistentBag.groupByEqualityHash()
+
+** New Feature
+    * [HHH-10398] - _MOD columns not named correctly when using custom column names
+
+** Task
+    * [HHH-13680] - Upgrade to Byte Buddy 1.10.2
+    * [HHH-13681] - Upgrade to Byteman 4.0.8
+
+** Improvement
+    * [HHH-12858] - integration overrides during JPA bootstrap ought to override all logically related settings
+    * [HHH-13432] - Have EntityManagerFactory expose persistence.xml `jta-data-source` element as a `javax.persistence.nonJtaDataSource` property
+    * [HHH-13660] - Reduce allocation costs of IdentityMaps used by ResultSetProcessingContextImpl
+    * [HHH-13662] - Avoid initializing XmlMappingBinderAccess when no XML mappings are defined
+    * [HHH-13666] - AssertionFailure: Exception releasing cache locks upon After/BeforeTransactionCompletionProcess failure
+    * [HHH-13673] - Cryptic error when providing import.sql file without a terminal char at the end of each line
+
+
 Changes in 5.4.6.Final (September 30, 2019)
 ------------------------------------------------------------------------------------------------------------------------
 

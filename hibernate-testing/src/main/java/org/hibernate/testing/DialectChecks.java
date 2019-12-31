@@ -55,6 +55,12 @@ abstract public class DialectChecks {
 		}
 	}
 
+	public static class NotSupportsEmptyInListCheck implements DialectCheck {
+		public boolean isMatch(Dialect dialect) {
+			return !dialect.supportsEmptyInList();
+		}
+	}
+
 	public static class CaseSensitiveCheck implements DialectCheck {
 		public boolean isMatch(Dialect dialect) {
 			return dialect.areStringComparisonsCaseInsensitive();
@@ -263,6 +269,12 @@ abstract public class DialectChecks {
 	public static class SupportsNoColumnInsert implements DialectCheck {
 		public boolean isMatch(Dialect dialect) {
 			return dialect.supportsNoColumnsInsert();
+		}
+	}
+
+	public static class SupportsSelectAliasInGroupByClause implements DialectCheck {
+		public boolean isMatch(Dialect dialect) {
+			return dialect.supportsSelectAliasInGroupByClause();
 		}
 	}
 

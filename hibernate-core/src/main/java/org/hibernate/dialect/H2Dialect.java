@@ -102,7 +102,7 @@ public class H2Dialect extends Dialect {
 
 		if ( buildId >= 32 ) {
 			this.sequenceInformationExtractor = SequenceInformationExtractorH2DatabaseImpl.INSTANCE;
-			this.querySequenceString = "select * from INFORMATION_SCHEMA.sequences";
+			this.querySequenceString = "select * from INFORMATION_SCHEMA.SEQUENCES";
 		}
 		else {
 			this.sequenceInformationExtractor = SequenceInformationExtractorNoOpImpl.INSTANCE;
@@ -450,4 +450,10 @@ public class H2Dialect extends Dialect {
 	public String getQueryHintString(String query, String hints) {
 		return IndexQueryHintHandler.INSTANCE.addQueryHints( query, hints );
 	}
+
+	@Override
+	public boolean supportsSelectAliasInGroupByClause() {
+		return true;
+	}
+
 }

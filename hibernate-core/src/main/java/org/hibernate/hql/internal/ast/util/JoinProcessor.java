@@ -8,6 +8,7 @@ package org.hibernate.hql.internal.ast.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.hibernate.hql.internal.ast.tree.FromReferenceNode;
 import org.hibernate.hql.internal.ast.tree.ImpliedFromElement;
 import org.hibernate.hql.internal.ast.tree.ParameterContainer;
 import org.hibernate.hql.internal.ast.tree.QueryNode;
+import org.hibernate.hql.internal.ast.tree.SqlFragment;
 import org.hibernate.hql.internal.classic.ParserHelper;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
@@ -103,24 +105,6 @@ public class JoinProcessor implements SqlTokenTypes {
 		}
 	}
 
-	private <T extends AST> List<T> findAllNodes(AST node, Class<T> clazz) {
-		ArrayList<T> found = new ArrayList<>();
-		doFindAllNodes( node, clazz, found );
-		return found;
-	}
-
-	private <T extends AST> void doFindAllNodes(AST node, Class<T> clazz, List<T> found) {
-		if ( clazz.isAssignableFrom( node.getClass() ) ) {
-			found.add( (T) node );
-		}
-		if ( node.getFirstChild() != null ) {
-			doFindAllNodes( node.getFirstChild(), clazz, found );
-		}
-		if ( node.getNextSibling() != null ) {
-			doFindAllNodes( node.getNextSibling(), clazz, found );
-		}
-	}
-
 	private Set<String> findQueryReferencedTables(QueryNode query) {
 		if ( !walker.getSessionFactoryHelper()
 				.getFactory()
@@ -150,15 +134,19 @@ public class JoinProcessor implements SqlTokenTypes {
 		Set<String> result = new HashSet<>();
 
 		// Find tables referenced by FromReferenceNodes
-		List<FromReferenceNode> fromReferenceNodes = findAllNodes( query, FromReferenceNode.class );
-		for ( FromReferenceNode node : fromReferenceNodes ) {
-			String[] tables = node.getReferencedTables();
-			if ( tables != null ) {
-				for ( String table : tables ) {
-					result.add( table );
-				}
+		collectReferencedTables( new ASTIterator( query ), result );
+		for (FromElement fromElement : (List<FromElement>) query.getFromClause().getFromElements()) {
+			// For joins, we want to add the table where the association key is mapped as well as that could be a supertype that we need to join
+			String role = fromElement.getRole();
+			if ( role != null ) {
+				result.add( fromElement.getOrigin().getPropertyTableName(role.substring(role.lastIndexOf('.') + 1)) );
+			}
+			AST withClauseAst = fromElement.getWithClauseAst();
+			if ( withClauseAst != null ) {
+				collectReferencedTables( new ASTIterator( withClauseAst ), result );
 			}
 		}
+
 
 		// Find tables referenced by fromElementsForLoad
 		if ( query.getSelectClause() != null ) {
@@ -168,14 +156,42 @@ public class JoinProcessor implements SqlTokenTypes {
 				if ( entityPersister != null && entityPersister instanceof AbstractEntityPersister ) {
 					AbstractEntityPersister aep = (AbstractEntityPersister) entityPersister;
 					String[] tables = aep.getTableNames();
-					for ( String table : tables ) {
-						result.add( table );
-					}
+					Collections.addAll(result, tables);
 				}
 			}
 		}
 
 		return result;
+	}
+
+	private void collectReferencedTables(ASTIterator iterator, Set<String> result) {
+		while ( iterator.hasNext() ) {
+			AST node = iterator.nextNode();
+			if ( node instanceof FromReferenceNode ) {
+				FromReferenceNode fromReferenceNode = (FromReferenceNode) node;
+				String[] tables = fromReferenceNode.getReferencedTables();
+				if ( tables != null ) {
+					Collections.addAll(result, tables);
+				}
+			}
+			else if (node instanceof SqlFragment) {
+				SqlFragment sqlFragment = (SqlFragment) node;
+				FromElement fromElement = sqlFragment.getFromElement();
+
+				if (fromElement != null) {
+					// For joins, we want to add the table where the association key is mapped as well as that could be a supertype that we need to join
+					String role = fromElement.getRole();
+					if ( role != null ) {
+						result.add( fromElement.getOrigin().getPropertyTableName(role.substring(role.lastIndexOf('.') + 1)) );
+					}
+					AST withClauseAst = fromElement.getWithClauseAst();
+					if ( withClauseAst != null ) {
+						collectReferencedTables( new ASTIterator( withClauseAst ), result );
+					}
+				}
+
+			}
+		}
 	}
 
 	public void processJoins(QueryNode query) {

@@ -285,7 +285,7 @@ public class EnhancerImpl implements Enhancer {
 				}
 			}
 
-			return createTransformer( managedCtClass ).applyTo( builder, false );
+			return createTransformer( managedCtClass ).applyTo( builder );
 		}
 		else if ( enhancementContext.isCompositeClass( managedCtClass ) ) {
 			log.debugf( "Enhancing [%s] as Composite", managedCtClass.getName() );
@@ -318,13 +318,13 @@ public class EnhancerImpl implements Enhancer {
 								.intercept( implementationClearOwner );
 			}
 
-			return createTransformer( managedCtClass ).applyTo( builder, false );
+			return createTransformer( managedCtClass ).applyTo( builder );
 		}
 		else if ( enhancementContext.isMappedSuperclassClass( managedCtClass ) ) {
 			log.debugf( "Enhancing [%s] as MappedSuperclass", managedCtClass.getName() );
 
 			builder = builder.implement( ManagedMappedSuperclass.class );
-			return createTransformer( managedCtClass ).applyTo( builder, true );
+			return createTransformer( managedCtClass ).applyTo( builder );
 		}
 		else if ( enhancementContext.doExtendedEnhancement( managedCtClass ) ) {
 			log.debugf( "Extended enhancement of [%s]", managedCtClass.getName() );
@@ -514,7 +514,7 @@ public class EnhancerImpl implements Enhancer {
 		private AnnotationList doGetAnnotations() {
 			AnnotationDescription.Loadable<Access> access = fieldDescription.getDeclaringType().asErasure()
 					.getDeclaredAnnotations().ofType( Access.class );
-			if ( access != null && access.loadSilent().value() == AccessType.PROPERTY ) {
+			if ( access != null && access.load().value() == AccessType.PROPERTY ) {
 				Optional<MethodDescription> getter = getGetter();
 				if ( getter.isPresent() ) {
 					return getter.get().getDeclaredAnnotations();
@@ -523,7 +523,7 @@ public class EnhancerImpl implements Enhancer {
 					return fieldDescription.getDeclaredAnnotations();
 				}
 			}
-			else if ( access != null && access.loadSilent().value() == AccessType.FIELD ) {
+			else if ( access != null && access.load().value() == AccessType.FIELD ) {
 				return fieldDescription.getDeclaredAnnotations();
 			}
 			else {
@@ -536,7 +536,7 @@ public class EnhancerImpl implements Enhancer {
 				}
 				annotationDescriptions.addAll( fieldDescription.getDeclaredAnnotations() );
 
-				return fieldDescription.getDeclaredAnnotations();
+				return new AnnotationList.Explicit( annotationDescriptions );
 			}
 		}
 	}

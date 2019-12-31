@@ -325,7 +325,7 @@ public class PersistentAttributesEnhancer extends EnhancerImpl {
 		final CtClass targetEntity = PersistentAttributesHelper.getTargetEntityClass( managedCtClass, persistentField );
 		if ( targetEntity == null ) {
 			log.infof(
-					"Could not find type of bi-directional association for field [%s#%s]",
+					"Bi-directional association not managed for field [%s#%s]: Could not find target type",
 					managedCtClass.getName(),
 					persistentField.getName()
 			);
@@ -334,9 +334,10 @@ public class PersistentAttributesEnhancer extends EnhancerImpl {
 		final String mappedBy = PersistentAttributesHelper.getMappedBy( persistentField, targetEntity, enhancementContext );
 		if ( mappedBy == null || mappedBy.isEmpty() ) {
 			log.infof(
-					"Could not find bi-directional association for field [%s#%s]",
+					"Bi-directional association not managed for field [%s#%s]: Could not find target field in [%s]",
 					managedCtClass.getName(),
-					persistentField.getName()
+					persistentField.getName(),
+					targetEntity.getName()
 			);
 			return;
 		}
@@ -459,7 +460,7 @@ public class PersistentAttributesEnhancer extends EnhancerImpl {
 			if ( PersistentAttributesHelper.isAssignable( persistentField.getType(), Map.class.getName() ) ||
 					PersistentAttributesHelper.isAssignable( targetEntity.getField( mappedBy ).getType(), Map.class.getName() ) ) {
 				log.infof(
-						"Bi-directional association for field [%s#%s] not managed: @ManyToMany in java.util.Map attribute not supported ",
+						"Bi-directional association not managed for field [%s#%s]: @ManyToMany in java.util.Map attribute not supported ",
 						managedCtClass.getName(),
 						persistentField.getName()
 				);
@@ -519,26 +520,30 @@ public class PersistentAttributesEnhancer extends EnhancerImpl {
 		// make sure to add the CompositeOwner interface
 		addCompositeOwnerInterface( managedCtClass );
 
+		String readFragment = persistentField.visibleFrom( managedCtClass ) ? persistentField.getName() : "super." + EnhancerConstants.PERSISTENT_FIELD_READER_PREFIX + persistentField.getName() + "()";
+
 		// cleanup previous owner
 		fieldWriter.insertBefore(
 				String.format(
-						"if (%1$s != null) { ((%2$s) %1$s).%3$s(\"%1$s\"); }%n",
-						persistentField.getName(),
+						"if (%1$s != null) { ((%2$s) %1$s).%3$s(\"%4$s\"); }%n",
+						readFragment,
 						CompositeTracker.class.getName(),
-						EnhancerConstants.TRACKER_COMPOSITE_CLEAR_OWNER
+						EnhancerConstants.TRACKER_COMPOSITE_CLEAR_OWNER,
+						persistentField.getName()
 				)
 		);
 
 		// trigger track changes
 		fieldWriter.insertAfter(
 				String.format(
-						"if (%1$s != null) { ((%2$s) %1$s).%4$s(\"%1$s\", (%3$s) this); }%n" +
-								"%5$s(\"%1$s\");",
-						persistentField.getName(),
+						"if (%1$s != null) { ((%2$s) %1$s).%4$s(\"%6$s\", (%3$s) this); }%n" +
+								"%5$s(\"%6$s\");",
+						readFragment,
 						CompositeTracker.class.getName(),
 						CompositeOwner.class.getName(),
 						EnhancerConstants.TRACKER_COMPOSITE_SET_OWNER,
-						EnhancerConstants.TRACKER_CHANGER_NAME
+						EnhancerConstants.TRACKER_CHANGER_NAME,
+						persistentField.getName()
 				)
 		);
 	}

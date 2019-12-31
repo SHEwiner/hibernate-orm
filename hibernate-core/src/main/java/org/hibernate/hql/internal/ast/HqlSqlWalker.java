@@ -509,7 +509,7 @@ public class HqlSqlWalker extends HqlSqlBaseWalker implements ErrorReporter, Par
 			SqlGenerator sql = new SqlGenerator( getSessionFactoryHelper().getFactory() );
 			sql.whereExpr( hqlSqlWithNode.getFirstChild() );
 
-			fromElement.setWithClauseFragment( "(" + sql.getSQL() + ")" );
+			fromElement.setWithClauseFragment( hqlSqlWithNode.getFirstChild(), "(" + sql.getSQL() + ")" );
 		}
 		catch (SemanticException e) {
 			throw e;
@@ -1262,6 +1262,18 @@ public class HqlSqlWalker extends HqlSqlBaseWalker implements ErrorReporter, Par
 		if ( !isSubQuery() &&
 				orderExpressionNode.getType() == IDENT &&
 				selectExpressionsByResultVariable.containsKey( orderExpressionNode.getText() ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected boolean isGroupExpressionResultVariableRef(AST groupExpressionNode) throws SemanticException {
+		// Aliases are not sensible in subqueries
+		if ( getDialect().supportsSelectAliasInGroupByClause() &&
+				!isSubQuery() &&
+				groupExpressionNode.getType() == IDENT &&
+				selectExpressionsByResultVariable.containsKey( groupExpressionNode.getText() ) ) {
 			return true;
 		}
 		return false;

@@ -532,7 +532,8 @@ public class MySQLDialect extends Dialect {
 			@Override
 			public JDBCException convert(SQLException sqlException, String message, String sql) {
 				switch ( sqlException.getErrorCode() ) {
-					case 1205: {
+					case 1205:
+					case 3572: {
 						return new PessimisticLockException( message, sqlException, sql );
 					}
 					case 1207:
@@ -603,4 +604,10 @@ public class MySQLDialect extends Dialect {
 	protected String escapeLiteral(String literal) {
 		return ESCAPE_PATTERN.matcher( super.escapeLiteral( literal ) ).replaceAll( ESCAPE_PATTERN_REPLACEMENT );
 	}
+
+	@Override
+	public boolean supportsSelectAliasInGroupByClause() {
+		return true;
+	}
+
 }
